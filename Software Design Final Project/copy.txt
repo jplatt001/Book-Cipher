@@ -1,0 +1,261 @@
+/*
+Book Cipher encrypter / decrypter. 
+Takes a plain text file as input and encrypts it with Book Cipher 
+using another text file (Book). Decrypts encrypted text files.
+Supports custom encryption keys.
+*/
+
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.awt.BorderLayout;
+//import java.awt.Button;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.util.Dictionary;
+import java.util.Hashtable;
+
+import java.util.ArrayList;
+
+import javax.swing.*;  
+import java.awt.GridLayout;
+import java.awt.Insets;
+
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.GridPane;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+
+import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
+
+import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.List;
+
+
+
+class Main {
+  public static void main(String[] args) {
+
+    decrypt("encrypted.txt", "book.txt");
+    encrypt("plaintext.txt", "book.txt");
+
+    GUI.launch(GUI.class, args);
+
+
+  }
+
+
+
+
+  public static List<String> readTextFile(String filePath) throws IOException {
+      Path path = Paths.get(filePath);
+      return Files.readAllLines(path, StandardCharsets.UTF_8);
+  }
+  
+  public static void decrypt(String encryptedFile, String bookFile) {
+
+    try { 
+      List<String> encryptedLines = readTextFile(encryptedFile); // read encrypted file and store by line
+      List<String> bookLines = readTextFile(bookFile); // read book file and store by line
+
+
+    String message = "";
+
+    System.out.println("Original message:\n\n");
+    for (String encryptedLine : encryptedLines){
+      System.out.println(encryptedLine);
+    }
+    System.out.println("------------------------\n");
+      
+    System.out.println("Decrypted message:\n\n");
+      for (String encryptedLine : encryptedLines){
+
+        if (encryptedLine.strip().equals("")){ // if line is empty, print message and clear message to prepare to read the next line
+          System.out.println(message); 
+          message = ""; 
+          continue;
+        }
+        else if (encryptedLine.strip().equals("[word not in book]")){
+          message += "xxxxx ";
+          continue;
+        }
+        else{
+          try{
+          String[] encryptedLineArray = encryptedLine.split(" ");
+          
+          int line = -1; //index of line in book 
+          int word = -1; //index of word in book
+
+          if (encryptedLineArray.length >= 2 && !encryptedLineArray[1].isEmpty()) {
+            line = Integer.parseInt(encryptedLineArray[1]); //line index = first number in encrypted line
+          }
+
+          if (encryptedLineArray.length >= 3 && !encryptedLineArray[2].isEmpty()) {
+            word = Integer.parseInt(encryptedLineArray[2]); //line index = first number in encrypted line
+          }
+
+          String[] bookLinesArray = bookLines.toArray(new String[0]);
+
+          if (line >= 1 && line <= bookLinesArray.length) { // Ensure line index is within bounds
+              String bookLine = bookLinesArray[line - 1];
+
+              
+              String[] bookLineArray = bookLine.split(" "); // Split the book line into words
+
+              
+              if (word >= 1 && word <= bookLineArray.length) { // Ensure word index is within bounds
+                  message += bookLineArray[word - 1] + " ";
+                  message = message.replaceAll("\\p{Punct}", "").toLowerCase();
+              } 
+              else {
+                  System.out.println("Invalid word index: " + word);
+              }
+          } 
+          else {
+              System.out.println("Invalid line index: " + line);
+          }
+          }
+          catch (NumberFormatException e) {
+              // Handle the case where encryptedLine is not an integer
+            //System.out.println("catch");
+              continue;
+          }
+              
+        }
+      } 
+    System.out.println(message + "\n------------------------\n"); //prints final line of message
+    }
+      
+    catch (IOException e) {
+        e.printStackTrace();
+    }
+    catch (NumberFormatException e) {
+    // Handle NumberFormatException
+    e.printStackTrace();
+    }
+  }
+
+  public static void encrypt(String textFile, String bookFile){
+
+    try { 
+      List<String> textLines = readTextFile(textFile); // read text file and store by line
+      List<String> bookLines = readTextFile(bookFile); // read book file and store by line
+    
+    ArrayList<String> wordList = new ArrayList<String>();
+    ArrayList<String> encryption = new ArrayList<String>();
+    Dictionary<String, String> foundWords = new Hashtable<String, String>();
+
+    int l = 0;
+    int w = 0;
+      
+    for (String textLine : textLines){
+      if (textLine.strip().equals("")){
+        wordList.add("-emptyLine-");
+      }
+      else{
+        String[] textLineArray = textLine.split(" ");
+        for (String textWord : textLineArray){
+          textWord= textWord.replaceAll("\\p{Punct}", "").toLowerCase();
+          wordList.add(textWord);
+        }
+      }
+    }
+    for (String word : wordList){
+      if (foundWords.get(word) != null){/////
+        encryption.add(foundWords.get(word));
+        continue;
+          }
+      l = 0;
+      if (word.equals("-emptyLine-")){
+        encryption.add("");
+      }
+
+      else{
+        for (String bookLine : bookLines){
+          if (foundWords.get(word) != null){
+            break;
+          }
+          l = l + 1;
+          w = 0;
+          String[] bookLineArray = bookLine.split(" ");
+
+          for (String bookWord : bookLineArray){
+            w = w + 1;
+            bookWord = bookWord.replaceAll("\\p{Punct}", "").toLowerCase();
+
+            if (word .equals(bookWord)){
+              
+              encryption.add(Integer.toString(l) + " " + Integer.toString(w));
+              foundWords.put(word, Integer.toString(l) + " " + Integer.toString(w));
+              break;
+            }
+          }
+        }
+        if (foundWords.get(word) == null){
+          encryption.add("[word not in book]");
+        }
+      }
+    }  
+
+    System.out.println("Original message:\n\n");
+    for (String textLine : textLines){
+      System.out.println(textLine);
+    }
+    System.out.println("\n------------------------\n");
+    
+    System.out.println("Encrypted message:\n\n");
+    for (String encrypted : encryption){
+        System.out.println(encrypted);
+    }
+    System.out.println("\n------------------------\n");
+
+    
+  }
+
+    catch (IOException e) {
+      e.printStackTrace();
+    }
+    catch (NumberFormatException e) {
+      // Handle NumberFormatException
+      e.printStackTrace();
+    }
+
+  
+
+  }
+}

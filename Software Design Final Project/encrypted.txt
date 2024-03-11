@@ -1,0 +1,25 @@
+ 139 10
+ 151 2
+ 143 6
+ 219 3
+ 21 3
+ 9 7
+ 
+ 39 3
+ 37 1
+ 41 19
+ 175 10 (text to prove success of error handling)
+
+ 19 4
+ 53 33
+ 37 3
+
+ 41 1
+ 53 55
+ 71 17
+(text to prove success of error handling)
+
+ 45 2
+ 49 95
+ 225 18
+ 
